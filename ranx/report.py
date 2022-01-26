@@ -170,7 +170,7 @@ class Report(object):
 
         for m1 in self.model_names:
             d[m1] = {}
-            d[m1]["scores"] = self.results[m1]
+            d[m1]["scores"] = {metric: float(value) for metric, value in self.results[m1].items()}
             d[m1]["comparisons"] = {}
             d[m1]["win_tie_loss"] = {}
 
@@ -182,9 +182,8 @@ class Report(object):
                         d[m1]["comparisons"][m2][metric] = self.comparisons[
                             {m1, m2}
                         ][metric]["p_value"]
-                        d[m1]["win_tie_loss"][m2] = self.win_tie_loss[(m1, m2)][
-                            metric
-                        ]
+                        wtl = self.win_tie_loss[(m1, m2)][metric]
+                        d[m1]["win_tie_loss"][m2] = {k: int(v) for k, v in wtl.items()}
         return d
 
     def save(self, path):
