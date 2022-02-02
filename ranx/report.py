@@ -12,6 +12,7 @@ super_chars = list("ᵃᵇᶜᵈᵉᶠᵍʰᶦʲᵏˡᵐⁿᵒᵖ۹ʳˢᵗᵘᵛ
 
 metric_labels = {
     "hits": "Hits",
+    "hit_rate": "Hit rate",
     "precision": "P",
     "recall": "Recall",
     "r-precision": "R-Prec",
