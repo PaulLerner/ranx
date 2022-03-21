@@ -2,7 +2,9 @@ import numpy as np
 from numba import config, njit, prange
 from numba.typed import Dict as TypedDict
 from numba.typed import List as TypedList
+import warnings
 
+warnings.warn("Sorting disabled. Assumes that you provided sorted doc_ids!")
 
 config.THREADING_LAYER = "workqueue"
 
@@ -99,8 +101,6 @@ def add_and_sort(d, q_ids, doc_ids, scores):
     d = add_bulk(d, q_ids, doc_ids, scores)
     # Sort q_ids
     d = sort_dict_by_key(d)
-    # Sort scores
-    d = sort_dict_of_dict_by_value(d)
 
     return d
 
@@ -122,7 +122,5 @@ def create_and_sort(q_ids, doc_ids, scores):
     d = create_bulk(q_ids, doc_ids, scores)
     # Sort q_ids
     d = sort_dict_by_key(d)
-    # Sort scores
-    d = sort_dict_of_dict_by_value(d)
 
     return d
