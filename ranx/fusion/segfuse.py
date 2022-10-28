@@ -108,15 +108,13 @@ def segfuse(runs: List[Run], probs: List[np.ndarray], name: str = "segfuse"):
         Run: Combined run.
 
     """
+    _runs = [None] * len(runs)
     for i, run in enumerate(runs):
         _run = Run()
         _run.run = _seg_score_parallel(run.run, probs[i])
-        runs[i] = _run
+        _runs[i] = _run
 
-    run = comb_sum(runs)
-    run.name = name
-
-    return run
+    return comb_sum(_runs, name)
 
 
 def segfuse_train(qrels: Qrels, runs: List[Run]) -> List[np.ndarray]:

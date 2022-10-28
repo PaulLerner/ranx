@@ -3,7 +3,6 @@
 import json
 from typing import Dict, List, Tuple
 
-import numpy as np
 from tabulate import tabulate
 
 from .frozenset_dict import FrozensetDict
@@ -12,16 +11,20 @@ chars = list("abcdefghijklmnopqrstuvwxyz")
 super_chars = list("ᵃᵇᶜᵈᵉᶠᵍʰᶦʲᵏˡᵐⁿᵒᵖ۹ʳˢᵗᵘᵛʷˣʸᶻ")
 
 metric_labels = {
-    "hits": "Hits",
-    "hit_rate": "Hit_Rate",
-    "precision": "P",
-    "recall": "Recall",
-    "f1": "F1",
-    "r-precision": "R-Prec",
-    "mrr": "MRR",
-    "map": "MAP",
-    "ndcg": "NDCG",
-    "ndcg_burges": "NDCG_Burges",
+    **{
+        "hits": "Hits",
+        "hit_rate": "Hit Rate",
+        "precision": "P",
+        "recall": "Recall",
+        "f1": "F1",
+        "r-precision": "R-Prec",
+        "mrr": "MRR",
+        "map": "MAP",
+        "ndcg": "NDCG",
+        "ndcg_burges": "NDCG Burges",
+        "bpref": "BPref",
+    },
+    **{f"rbp.{i}": f"RBP.{i}" for i in range(1, 100)},
 }
 
 stat_test_labels = {
@@ -71,7 +74,7 @@ class Report(object):
         win_tie_loss: Dict[Tuple[str], Dict[str, Dict[str, int]]],
         rounding_digits: int = 3,
         show_percentages: bool = False,
-        stat_test: str = "fisher",
+        stat_test: str = "student",
     ):
         self.model_names = model_names
         self.results = results
@@ -193,7 +196,7 @@ class Report(object):
             + """ with $p \le """
             + str(self.max_p)
             + "$.\n}\n\\resizebox{0.8\\textwidth}{!}{"
-            + "\n\\begin{tabular}{c|c"
+            + "\n\\begin{tabular}{c|l"
             + "|c" * len(self.metrics)
             + "}"
             + "\n\\toprule"

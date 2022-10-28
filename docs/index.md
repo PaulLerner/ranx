@@ -26,13 +26,16 @@
 
 ## 🔥 News
 
-- [June 29, 2022] Added support for Tukey's HSD Test.
+- 📌 [July 27, 2022] `ranx` will be featured in [CIKM 2022, the 31st ACM International Conference on Information and Knowledge Management](https://www.cikm2022.org)!
+
+- [August 29, 2022] `ranx` `0.2.9` is out.  
+Filetypes are now automatically inferred from file extensions (`.json` → `json`, `.trec` → `trec`, `.txt` → `trec`). Default behavior can be overridden with the `kind` parameter (this should allow for backward compatibility).  
+`Two-sided Paired Student's t-Test` is now the default statistical test used when calling `compare` (it is much faster than `Fisher's` and they usually agree).  
+Loading / saving `Qrels` and `Run` from / to `json` files is now much faster thanks to [orjson](https://github.com/ijl/orjson).
+- [June 29, 2022] Added support for [Tukey's HSD Test](https://www.itl.nist.gov/div898/handbook/prc/section4/prc471.htm).
 - [June 28, 2022] Added support for [Bpref](https://amenra.github.io/ranx/metrics/#bpref) and [Rank-biased Precision (RBP)](https://amenra.github.io/ranx/metrics/#rank-biased-precision) metrics.
 - [June 9, 2022] Added support for **25 fusion algorithms**, **six normalization strategies**, and an **automatic fusion optimization** functionality in `v.0.2`.  
 Check out the [official documentation](https://amenra.github.io/ranx) and [Jupyter Notebook](https://colab.research.google.com/github/AmenRa/ranx/blob/master/notebooks/5_fusion.ipynb) for further details on [fusion](https://amenra.github.io/ranx/fusion) and [normalization](https://amenra.github.io/ranx/normalization).
-- [May 18, 2022] Added support for loading qrels from [ir-datasets](https://ir-datasets.com) in `v.0.1.13`.  
-Usage example: `Qrels.from_ir_datasets("msmarco-document/dev")` for [MS MARCO](https://microsoft.github.io/msmarco/) document retrieval dev set.
-- [May 4, 2022] Added [Paired Student's t-Test](https://en.wikipedia.org/wiki/Student%27s_t-test) in `v.0.1.12`.
 
 ## ⚡️ Introduction
 
@@ -68,7 +71,7 @@ The metrics have been tested against [TREC Eval](https://github.com/usnistgov/tr
 
 ### Statistical Tests
 * [Fisher's Randomization Test](https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/fishrand.htm)
-* [Paired Student's t-Test](https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/t_test.htm)
+* [Paired Student's t-Test](https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/t_test.htm) (default)
 * [Tukey's HSD Test](https://www.itl.nist.gov/div898/handbook/prc/section4/prc471.htm)
 
 Please, refer to [Smucker et al.](https://dl.acm.org/doi/10.1145/1321440.1321528), [Carterette](https://dl.acm.org/doi/10.1145/2094072.2094076), and  [Fuhr](http://www.sigir.org/wp-content/uploads/2018/01/p032.pdf) for additional information on statistical tests for Information Retrieval.
@@ -88,7 +91,7 @@ A full list of the available qrels is provided [here](https://ir-datasets.com).
 | [CombMED](https://amenra.github.io/ranx/fusion/#combmed) | [CombGMNZ](https://amenra.github.io/ranx/fusion/#combgmnz) | [RBC](https://amenra.github.io/ranx/fusion/#rank-biased-centroids-rbc)  | [PosFuse](https://amenra.github.io/ranx/fusion/#posfuse)     | [Weighted BordaFuse](https://amenra.github.io/ranx/fusion/#weighted-bordafuse) |
 | [CombANZ](https://amenra.github.io/ranx/fusion/#combanz) | [ISR](https://amenra.github.io/ranx/fusion/#isr)           | [WMNZ](https://amenra.github.io/ranx/fusion/#wmnz)                      | [ProbFuse](https://amenra.github.io/ranx/fusion/#probfuse)   | [Condorcet](https://amenra.github.io/ranx/fusion/#condorcet)                   |
 | [CombMAX](https://amenra.github.io/ranx/fusion/#combmax) | [Log_ISR](https://amenra.github.io/ranx/fusion/#log_isr)   | [Mixed](https://amenra.github.io/ranx/fusion/#mixed)                    | [SegFuse](https://amenra.github.io/ranx/fusion/#segfuse)     | [Weighted Condorcet](https://amenra.github.io/ranx/fusion/#weighted-condorcet) |
-| [CombSUM](https://amenra.github.io/ranx/fusion/#combsum) | [LogN_ISR](https://amenra.github.io/ranx/fusion/#logn_isr) | [BayesFuse](https://amenra.github.io/ranx/fusion/#bayesfuse)            | [SlideFuse](https://amenra.github.io/ranx/fusion/#slidefuse) | [Wighted Sum](https://amenra.github.io/ranx/fusion/#wighted-sum)               |
+| [CombSUM](https://amenra.github.io/ranx/fusion/#combsum) | [LogN_ISR](https://amenra.github.io/ranx/fusion/#logn_isr) | [BayesFuse](https://amenra.github.io/ranx/fusion/#bayesfuse)            | [SlideFuse](https://amenra.github.io/ranx/fusion/#slidefuse) | [Weighted Sum](https://amenra.github.io/ranx/fusion/#wighted-sum)              |
 
 Please, refer to the [documentation](https://amenra.github.io/ranx/fusion) for further details.
 
@@ -144,7 +147,7 @@ evaluate(qrels, run, ["map@5", "mrr"])
 ```python
 from ranx import compare
 
-# Compare different runs and perform statistical tests
+# Compare different runs and perform Two-sided Paired Student's t-Test
 report = compare(
     qrels=qrels,
     runs=[run_1, run_2, run_3, run_4, run_5],

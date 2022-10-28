@@ -1,13 +1,15 @@
-import json
+import os
 from collections import defaultdict
 from typing import Dict, List
 
 import numpy as np
+import orjson
 import pandas as pd
 from numba import types
 from numba.typed import Dict as TypedDict
 from numba.typed import List as TypedList
 
+from ..io import download
 from .common import (
     add_and_sort,
     create_and_sort,
@@ -67,6 +69,7 @@ class Run(object):
             self.sorted = True
 
         self.name = name
+        self.metadata = {}
         self.scores = defaultdict(dict)
         self.mean_scores = {}
 
@@ -84,7 +87,8 @@ class Run(object):
         """
         if self.run.get(q_id) is None:
             self.run[q_id] = TypedDict.empty(
-                key_type=types.unicode_type, value_type=types.float64,
+                key_type=types.unicode_type,
+                value_type=types.float64,
             )
         self.run[q_id][doc_id] = float(score)
         self.sorted = False
@@ -151,25 +155,27 @@ class Run(object):
             d[q_id] = dict(self[q_id])
         return d
 
-    def save(self, path: str = "run.json", kind: str = "json"):
-        """Write `run` to `path` as JSON file or TREC run format.
+    def save(self, path: str = "run.json", kind: str = None):
+        """Write `run` to `path` as JSON file or TREC run format. File type is automatically inferred form the filename extension: ".json" -> "json", ".trec" -> "trec", ".txt" -> "trec". Use the "kind" argument to override this behavior.
 
         Args:
             path (str, optional): Saving path. Defaults to "run.json".
-            kind (str, optional): Kind of file to save, must be either "json" or "trec". Defaults to "json".
+            kind (str, optional): Kind of file to save, must be either "json" or "trec". If None, it will be automatically inferred from the filename extension.
         """
-        assert kind in {
-            "json",
-            "trec",
-        }, "Error `kind` must be 'json' or 'trec'"
+        # Infer file extension -------------------------------------------------
+        kind = get_file_kind(path, kind)
 
+        # Save Run -------------------------------------------------------------
         if self.sorted == False:
             self.sort()
 
-        with open(path, "w") as f:
-            if kind == "json":
-                f.write(json.dumps(self.to_dict(), indent=4))
-            else:
+        if kind == "json":
+            with open(path, "wb") as f:
+                f.write(
+                    orjson.dumps(self.to_dict(), option=orjson.OPT_INDENT_2)
+                )
+        else:
+            with open(path, "w") as f:
                 for i, q_id in enumerate(self.run.keys()):
                     for rank, doc_id in enumerate(self.run[q_id].keys()):
                         score = self.run[q_id][doc_id]
@@ -215,23 +221,22 @@ class Run(object):
         return run
 
     @staticmethod
-    def from_file(path: str, kind: str = "json"):
-        """Parse a run file into ranx.Run. Supported formats are JSON and TREC run format.
+    def from_file(path: str, kind: str = None):
+        """Parse a run file into ranx.Run. Supported formats are JSON and TREC run format. Correct import behavior is inferred from the file extension: ".json" -> "json", ".trec" -> "trec", ".txt" -> "trec". Use the "kind" argument to override this behavior.
 
         Args:
             path (str): File path.
-            kind (str, optional): Kind of file to load, must be either "json" or "trec". Defaults to "json".
+            kind (str, optional): Kind of file to load, must be either "json" or "trec".
 
         Returns:
             Run: ranx.Run
         """
-        assert kind in {
-            "json",
-            "trec",
-        }, "Error `kind` must be 'json' or 'trec'"
+        # Infer file extension -------------------------------------------------
+        kind = get_file_kind(path, kind)
 
+        # Load Run -------------------------------------------------------------
         if kind == "json":
-            run = json.loads(open(path, "r").read())
+            run = orjson.loads(open(path, "rb").read())
         else:
             run = defaultdict(dict)
             name = ""
@@ -285,6 +290,24 @@ class Run(object):
 
         return Run.from_dict(run_py)
 
+    @staticmethod
+    def from_ranxhub(id: str):
+        """Download and load a ranx.Run from ranxhub.
+
+        Args:
+            path (str): Run ID.
+
+        Returns:
+            Run: ranx.Run
+        """
+        content = download(id)
+
+        run = Run.from_dict(content["run"])
+        run.name = content["metadata"]["run"]["name"]
+        run.metadata = content["metadata"]
+
+        return run
+
     @property
     def size(self):
         return len(self.run)
@@ -300,3 +323,18 @@ class Run(object):
 
     def __str__(self):
         return self.run.__str__()
+
+
+def get_file_kind(path: str = "qrels.json", kind: str = None) -> str:
+    # Infer file extension
+    if kind is None:
+        kind = os.path.splitext(path)[1][1:]
+        kind = "trec" if kind == "txt" else kind
+
+    # Sanity check
+    assert kind in {
+        "json",
+        "trec",
+    }, "Error `kind` must be 'json' or 'trec'"
+
+    return kind

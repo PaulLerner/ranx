@@ -76,15 +76,13 @@ def mapfuse(runs: List[Run], map_scores: List[float], name: str = "mapfuse"):
         Fused run.
 
     """
+    _runs = [None] * len(runs)
     for i, run in enumerate(runs):
         _run = Run()
         _run.run = _map_score_parallel(run.run, map_scores[i])
-        runs[i] = _run
+        _runs[i] = _run
 
-    run = comb_sum(runs)
-    run.name = name
-
-    return run
+    return comb_sum(_runs, name)
 
 
 def mapfuse_train(qrels: Qrels, runs: List[Run]) -> List[float]:

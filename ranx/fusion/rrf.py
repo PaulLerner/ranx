@@ -61,12 +61,10 @@ def rrf(runs: List[Run], k: int = 60, name: str = "rrf") -> Run:
         Run: Combined run.
 
     """
+    _runs = [None] * len(runs)
     for i, run in enumerate(runs):
         _run = Run()
         _run.run = _rrf_score_parallel(run.run, k)
-        runs[i] = _run
+        _runs[i] = _run
 
-    run = comb_sum(runs)
-    run.name = name
-
-    return run
+    return comb_sum(_runs, name)
